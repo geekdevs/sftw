@@ -1,0 +1,11 @@
+{
+	"require": {
+	    "symfony/Console": "2.0.*"
+	},
+	
+	"autoload": {
+		"psr-0" : { 
+			"Dws" : "lib/"
+		}
+	}
+}
