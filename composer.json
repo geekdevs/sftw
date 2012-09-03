@@ -1,5 +1,5 @@
 {
-   "name": "dws/sftw",
+   "name": "startupdevs/sftw",
     "type": "library",
     "description": "South for the Winter (sftw) is a PDO-based DB migration tool for PHP 5.3",
     "keywords": ["db","migration", "pdo"],
