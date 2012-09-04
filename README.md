@@ -49,7 +49,7 @@ project's `composer.json` to specify where the `sftw` CLI scripts are symlinked.
 }
 ```
 
-Then in your pject root:
+Then in your project root:
 
 	$ php composer.phar update
 
