@@ -16,6 +16,6 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
         'php composer.phar install'.PHP_EOL);
 }
 
-$application = new Console\Application('Demo', '1.0.0');
+$application = new Console\Application('South For the Winter', '0.1.0');
 $application->add(new SftwCommand('sftw'));
 $application->run();
