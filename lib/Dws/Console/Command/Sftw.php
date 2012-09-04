@@ -10,7 +10,7 @@ use Symfony\Component\Console;
  *
  * @author David Weinraub <david.weinraub@diamondwebservices.com>
  */
-class Stfw extends Console\Command\Command
+class Sftw extends Console\Command\Command
 {
     public function __construct($name = null)
     {
