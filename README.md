@@ -18,8 +18,6 @@ As a standalone component
 
 ```
 $ git clone git@github.com:startupdevs/sftw.git
-$ cd sftw
-$ php composer.phar install
 ```
 
 In another project via Composer
