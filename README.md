@@ -102,21 +102,21 @@ Invocation, starting in the project root, is as follows:
 
 To display the current schema version:
 
-    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb
+    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb
 
 To upgrade to latest schema version:
 
-    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations latest
+    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations latest
 
 Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.
 
 To target a specific schema version (in this case 1):
 
-    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 1
+    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 1
 
 To roll all the way back to the state before the first migration file:
 
-    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 0
+    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 0
 
 Note: Depending upon how you write your migrations, schema upgrades and rollbacks can be 
 "data destructive". This is especially true of ADD/DROP TABLE and ALTER TABLE ADD/DROP COLUMN calls, 
@@ -144,4 +144,4 @@ Next Steps
 1. Allow a local config file (with some default name like `sftw.ini`) to contain 
 connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
 by default.
-2. Use some clever shell madness to hide the `console.php` name and invoke simply as: `$ sftw <params> <args>`
+2. Use some clever shell madness to hide the `sftw.php` name and invoke simply as: `$ sftw <params> <args>`
