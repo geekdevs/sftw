@@ -124,5 +124,4 @@ Next Steps
 1. Allow a local config file (with some default name like `sftw.ini`) to contain 
 connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
 by default.
-2. Use some clever shell madness to hide the `console.php` name and invoke simply as:
-	$ sftw <params> <args>
+2. Use some clever shell madness to hide the `console.php` name and invoke simply as: `$ sftw <params> <args>`
