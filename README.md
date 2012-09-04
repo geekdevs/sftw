@@ -39,7 +39,7 @@ Add to your project's `composer.json` as follows:
 ```
 
 Optionally, you can add a `bin-dir` entry into the `config` section of your 
-project's `composer.json` to specify where the SFTW CLI scripts are symlinked.
+project's `composer.json` to specify where the `sftw` CLI scripts are symlinked.
 
 ```
 {
@@ -49,7 +49,7 @@ project's `composer.json` to specify where the SFTW CLI scripts are symlinked.
 }
 ```
 
-Then:
+Then in your pject root:
 
 	$ php composer.phar update
 
@@ -94,11 +94,11 @@ class AddUserTable extends SchemaChange
 }
 ```
 
-Dave this file as:
+Save this file as:
 
 	/path/to/myproject/scripts/migrations/001-AddUserTable.php
 
-Invocation with the example migrations provided, start in the project root:
+Invocation, starting in the project root, is as follows:
 
 To display the current schema version:
 
@@ -106,7 +106,7 @@ To display the current schema version:
 
 To upgrade to latest schema version:
 
-    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations latest
 
 Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.
 
@@ -121,7 +121,6 @@ To roll all the way back to the state before the first migration file:
 Next Steps
 ==========
 
-* Shorten the command-line invocation:
 1. Allow a local config file (with some default name like `sftw.ini`) to contain 
 connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
 by default.
