@@ -13,47 +13,119 @@ merely considered too heavywight.
 Install
 =======
 
+As a standalone component
+-------------------------
+
 ```
 $ git clone git@github.com:startupdevs/sftw.git
 $ cd sftw
 $ php composer.phar install
-$ cd bin
-$ chmod +x ./sftw.php
-$ alias sftw="php `pwd`/bin/console.php sftw"
 ```
+
+In another project via Composer
+-------------------------------
+
+Add to your project's `composer.json` as follows:
+```
+{
+	"repositories" : [
+		{
+			"type" : "vcs",
+			"url" : "https://github.com/startupdevs/sftw.git"
+		}
+	]
+	"require": {
+		"startupdevs/sftw" : "dev-master"
+	}
+}
+```
+
+Optionally, you can add a `bin-dir` entry into the `config` section of your 
+project's `composer.json` to specify where the SFTW CLI scripts are symlinked.
+
+```
+{
+    "config": {
+        "bin-dir": "scripts"
+    }	
+}
+```
+
+Then:
+
+	$ php composer.phar update
 
 Usage
 =====
 
-@ TODO
+Assumes you have installed SFTW via Composer in your project `myproject` with a `bin-dir`
+value of `scripts`.
+
+Define one migration class - extending Dws\Db\Schema\AbstractChange for each schema 
+change you wish to implement. For example:
+
+```
+/*
+* Adding your own namespace to the migration classes is optional. If you do,
+* then you will be required to specify it during the invocation of the migration
+* script.
+*/
+namespace Ooga\Db\Migration;
+
+use Dws\Db\Schema\AbstractChange as SchemaChange;
+
+class AddUserTable extends SchemaChange
+{
+	public function up()
+	{
+		$sql = '
+			CREATE TABLE `user` (
+				`id` INT(11) UNSIGNED NOT NULL,
+				`name` VARCHAR(255)
+			)
+		';
+		$this->pdo->exec($sql);	
+	}
+
+	public function down()
+	{
+		$sql = 'DROP TABLE `user`';
+		$this->pdo->exec($sql);
+	}
+
+}
+```
+
+Dave this file as:
+
+	/path/to/myproject/scripts/migrations/001-AddUserTable.php
 
 Invocation with the example migrations provided, start in the project root:
 
 To display the current schema version:
 
-    $ sftw --host localhost --user myuser --pass mypass --db mydb --namespace Ooga/Db/Migration --path ./example/migrations
+    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb
 
 To upgrade to latest schema version:
 
-    $ sftw --host localhost --user myuser --pass mypass --db mydb --namespace Ooga/Db/Migration --path ./example/migrations latest
+    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
-To target a specifi schema version (in this case 1):
+Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.
 
-    $ sftw --host localhost --user myuser --pass mypass --db mydb --namespace Ooga/Db/Migration --path ./example/migrations 1
+To target a specific schema version (in this case 1):
+
+    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 1
 
 To roll all the way back to the state before the first migration file:
 
-    $ sftw --host localhost --user myuser --pass mypass --db mydb --namespace Ooga/Db/Migration --path ./example/migrations 0
+    $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 0
 
 Next Steps
 ==========
 
-* Make `sftw` a complete composer package so that it cam be used in other projects 
-simply by adding the relevant entries to the project's `composer.json` file
-
-* Open-source it?
-
-* Shorten the command-line invocation, probably by allowing a local config file 
-(with some default name like `sftw.ini`) that contains the params, similar to how 
-`phpunit` employs `phpunit.xml`.
-
+* Shorten the command-line invocation:
+1. Allow a local config file (with some default name like `sftw.ini`) to contain 
+connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
+by default.
+2. use some clever shell madness to hide the `console.php` name and invoke simply as:
+	$ sftw <params> <args>
