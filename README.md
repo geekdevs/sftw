@@ -118,6 +118,26 @@ To roll all the way back to the state before the first migration file:
 
     $ php ./scripts/console.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 0
 
+Note: Depending upon how you write your migrations, schema upgrades and rollbacks can be 
+"data destructive". This is especially true of ADD/DROP TABLE and ALTER TABLE ADD/DROP COLUMN calls, 
+but is even true when merely changing the format of a column. 
+
+For example, consider altering a datetime field into a integer Unix timestamp. 
+A straight cast of a datetime value into an integer will result in a 0 value. 
+A return to datetime will result in a 1970 date. To avoid this, your migration
+methods can perform the conversion as follows:
+
+1. create a temp column of the desired type to store the converted data
+2. drop the targeted column
+3. add converted data into the temp column
+4. drop the temp column 
+
+Rollbacks would obviously need to work in reverse.
+
+Generally speaking, an upgrade/rollback sequence will restore the **schema** as 
+expected, but unless special steps - as above - are taken to save/protect the 
+affected **data**, it will likely be lost.
+
 Next Steps
 ==========
 
