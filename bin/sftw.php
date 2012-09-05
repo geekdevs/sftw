@@ -2,7 +2,7 @@
 <?php
 
 use Symfony\Component\Console;
-use Dws\Console\Command\Sftw as SftwCommand;
+use Dws\Symfony\Component\Console\Command\Sftw;
 
 function includeIfExists($file)
 {
@@ -17,6 +17,11 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
         'php composer.phar install'.PHP_EOL);
 }
 
-$application = new Console\Application('South For the Winter', '0.1.0');
-$application->add(new SftwCommand('sftw'));
+$application = new Console\Application('South For the Winter - a db migration tool', '0.1.0');
+
+$application->add(new Sftw\Current());
+$application->add(new Sftw\Latest());
+$application->add(new Sftw\Migrate());
+$application->add(new Sftw\PointTo());
+
 $application->run();

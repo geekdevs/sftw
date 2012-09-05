@@ -104,23 +104,4 @@ class Sftw extends Console\Command\Command
 		}
     }
 	
-	protected function outputErrorsAndExit($errors, $output, $code = 1)
-	{
-		$output->writeln($errors);
-		$output->writeln($this->getSynopsis());
-		exit($code);
-	}
-	
-	protected function outputResult($result, $version, $output)
-	{
-		if (SchemaManager::RESULT_AT_CURRENT_VERSION == $result){
-			$output->writeln('Schema is already at requested version ' . $version);
-		} else if (SchemaManager::RESULT_OK == $result){
-			$output->writeln('Schema migrated to version ' . $version);
-		} else if (SchemaManager::RESULT_NO_MIGRATIONS_FOUND == $result){
-			$output->writeln('Unable to find migrations');
-		} else {
-			throw new \RuntimeException('Unknown migration result');
-		}		
-	}
 }

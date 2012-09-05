@@ -49,9 +49,11 @@ project's `composer.json` to specify where the `sftw` CLI scripts are symlinked.
 }
 ```
 
-Then in your project root:
+Then in your project root (assuming you used the `bin-dir` setting above):
 
 	$ php composer.phar update
+	$ chmod +x ./scripts/sftw.php
+	$ ln -s ./scripts/sftw.php ./scripts/sftw
 
 Usage
 =====
@@ -59,7 +61,7 @@ Usage
 Assumes you have installed SFTW via Composer in your project `myproject` with a `bin-dir`
 value of `scripts`.
 
-Define one migration class - extending Dws\Db\Schema\AbstractChange for each schema 
+Define one migration class - extending `Dws\Db\Schema\AbstractChange` for each schema 
 change you wish to implement. For example:
 
 ```
@@ -102,21 +104,25 @@ Invocation, starting in the project root, is as follows:
 
 To display the current schema version:
 
-    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb
+    $ ./scripts/sftw current --host myhost --user myuser --pass mypass --db mydb
 
 To upgrade to latest schema version:
 
-    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations latest
+    $ ./scripts/sftw latest --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
 Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.
 
-To target a specific schema version (in this case 1):
+To migrate to a specific schema version (in this case 1):
 
-    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 1
+    $ ./scripts/sftw migrate 1 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
 To roll all the way back to the state before the first migration file:
 
-    $ ./scripts/sftw.php sftw --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations 0
+    $ ./scripts/sftw migrate 0 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+
+To set the schema pointer to a particular version (when you have some migrations already "basked-in" to the deployed db, for example):
+
+    $ ./scripts/sftw point-to 5 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
 Note: Depending upon how you write your migrations, schema upgrades and rollbacks can be 
 "data destructive". This is especially true of ADD/DROP TABLE and ALTER TABLE ADD/DROP COLUMN calls, 
@@ -144,4 +150,11 @@ Next Steps
 1. Allow a local config file (with some default name like `sftw.ini`) to contain 
 connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
 by default.
-2. Use some clever shell madness to hide the `sftw.php` name and invoke simply as: `$ sftw <params> <args>`
+
+2. Support multiple environments, allowing you to define connection/namespace/path 
+settings based upon environment (development, staging, production, etc).
+
+Finally
+==========
+
+Enjoy the warm weather.
