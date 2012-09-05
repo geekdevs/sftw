@@ -95,7 +95,7 @@ class Manager
 				)
 			';
 			$this->pdo->exec($createSql);
-			$insertSql = 'INSERT INTO `' . $schemaVersionTableName . ' (`version`) VALUES (0)';
+			$insertSql = 'INSERT INTO `' . $schemaVersionTableName . '` (`version`) VALUES (0)';
 			$this->pdo->exec($insertSql);
 		}
 		return $this;
