@@ -5,7 +5,7 @@ namespace Dws\Db\Schema;
 use \PDO;
 
 /**
- * 
+ * Manages db schema version changes
  *
  * @author David Weinraub <david.weinraub@diamondwebservices.com>
  */
@@ -62,37 +62,96 @@ class Manager
 		$this->dir = $dir;
 		$this->namespace = str_replace('/', '\\', $namespace);
 		$this->tablePrefix = $tablePrefix;
+		
+		$this->ensureSchemaVersionTableExists();
 	}
-
-	function getCurrentSchemaVersion()
+	
+	public function doesSchemaVersionTableExist()
+	{
+		$select = $this->getPreparedSqlSelectStatementForCurrentVersion();
+		if ($select->execute() === false){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/**
+	 * Ensure that the schema version able exists and contains at least a single record
+	 * with the version field.
+	 * 
+	 * @return Manager
+	 */
+	public function ensureSchemaVersionTableExists()
 	{
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
-
-		$selectSql = "SELECT version FROM " . $schemaVersionTableName;
-		$select = $this->pdo->prepare($selectSql);
-		try {
-			if ($select->execute()){
-				$version = $select->fetchObject()->version;				
-			} else {
-				// means that the schema version table doesn't exist, so create it
-				$createSql = "CREATE TABLE $schemaVersionTableName ( 
+		if (!$this->doesSchemaVersionTableExist()){
+			// means that the schema version table doesn't exist, so create it
+			$createSql = 
+			'
+				CREATE TABLE `' . $schemaVersionTableName . '` ( 
 					version bigint NOT NULL,
-					PRIMARY KEY (version)
-				)";
-				$this->pdo->exec($createSql);
-				$insertSql = "INSERT INTO $schemaVersionTableName (version) VALUES (0)";
-				$this->pdo->exec($insertSql);
-				$select->execute();
-				$version = $select->fetchObject()->version;				
-			}
-		
-		} catch (\Exception $e) {
+					PRIMARY KEY (`version`)
+				)
+			';
+			$this->pdo->exec($createSql);
+			$insertSql = "INSERT INTO `' . $schemaVersionTableName` . ' (`version`) VALUES (0)";
+			$this->pdo->exec($insertSql);
 		}
-
-		return $version;
+		return $this;
+	}
+	
+	/**
+	 * Hard set the schema version value without performing any specified migrations
+	 * 
+	 * This is useful for when a group of migrations are "baked-in" to an 
+	 * already-deployed production system, but you still want to have earlier 
+	 * migrations (including a base schema) available for a fresh deployment
+	 * 
+	 * @return Manager
+	 */
+	public function setCurrentSchemaVersion($version)
+	{
+		$version = (int) $version;
+		if ($version < 0){
+			$version = 0;
+		}
+		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
+		$this->pdo->exec('UPDATE `' . $schemaVersionTableName . '` SET `version` = ' . $version);
+		return $this;
 	}
 
-	function updateTo($version = null)
+	/**
+	 * Utility function to generate a prepared PDoStatement to query for the current 
+	 * version
+	 * 
+	 * @return \PDOStatememt
+	 */
+	protected function getPreparedSqlSelectStatementForCurrentVersion()
+	{
+		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
+		return $this->pdo->prepare('SELECT `version` FROM `' . $schemaVersionTableName . '`');
+	}
+	
+	/**
+	 * Get the current schema version
+	 * 
+	 * @return integer
+	 */
+	public function getCurrentSchemaVersion()
+	{
+		$select = $this->getPreparedSqlSelectStatementForCurrentVersion();
+		$select->execute();
+		return $select->fetchObject()->version;
+	}
+
+	/**
+	 * Use the migrations to update the db to the specified schema version
+	 * 
+	 * @param int|null $version the targeted version
+	 * @return int One of the class constants RESULT_AT_CURRENT_VERSION, RESULT_NO_MIGRATIONS_FOUND, or RESULT_OK
+	 */
+	public function updateTo($version = null)
 	{
 		if (is_null($version)) {
 			$version = PHP_INT_MAX;
@@ -122,6 +181,13 @@ class Manager
 		return self::RESULT_OK;
 	}
 
+	/**
+	 * 
+	 * @param int $currentVersion
+	 * @param int $stopVersion
+	 * @param string $dir
+	 * @return array an array containing migration-file data to use in applying the requested migrations
+	 */
 	protected function _getMigrationFiles($currentVersion, $stopVersion, $dir = null)
 	{
 		if ($dir === null) {
@@ -177,6 +243,13 @@ class Manager
 		return $files;
 	}
 
+	/**
+	 * Actually perform a migration as specified in the $migration data
+	 * 
+	 * @param array $migration an array of data required to perform the migration
+	 * @param string $direction 'up' or 'down'
+	 * @throws \Exception
+	 */
 	protected function _processFile($migration, $direction)
 	{
 		$path = $migration['path'];
@@ -197,18 +270,27 @@ class Manager
 		$this->_updateSchemaVersion($version);
 	}
 
+	/**
+	 * Hard update the stored schema version
+	 * 
+	 * @param type $version
+	 */
 	protected function _updateSchemaVersion($version)
 	{
+		$version = (int) $version;
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
-		$sql = "UPDATE  $schemaVersionTableName SET version = " . (int) $version;
+		$sql = 'UPDATE  `' . $schemaVersionTableName . '` SET `version` = ' . $version;
 		$this->pdo->exec($sql);
 	}
 
-	public function getPrefixedSchemaVersionTableName()
-	{
-		return $this->tablePrefix . $this->schemaVersionTableName;
-	}
-
+	/**
+	 * Utility function to get a relative path
+	 * 
+	 * @param string $from
+	 * @param string $to
+	 * @param string $ps path separator
+	 * @return string
+	 */
 	protected function _relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
 	{
 		$arFrom = explode($ps, rtrim($from, $ps));
@@ -220,4 +302,13 @@ class Manager
 		return str_pad("", count($arFrom) * 3, '..' . $ps) . implode($ps, $arTo);
 	}
 
+	/**
+	 * Get the prefixed schema-version table name
+	 * 
+	 * @return string
+	 */
+	public function getPrefixedSchemaVersionTableName()
+	{
+		return $this->tablePrefix . $this->schemaVersionTableName;
+	}
 }
