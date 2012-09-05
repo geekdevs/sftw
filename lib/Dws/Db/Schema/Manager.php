@@ -69,10 +69,14 @@ class Manager
 	public function doesSchemaVersionTableExist()
 	{
 		$select = $this->getPreparedSqlSelectStatementForCurrentVersion();
-		if ($select->execute() === false){
+		try {
+			if ($select->execute() === false){
+				return false;
+			} else {
+				return true;
+			}			
+		} catch (\Exception $e) {
 			return false;
-		} else {
-			return true;
 		}
 	}
 	
