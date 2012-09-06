@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>SFTW by startupdevs</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>SFTW</h1>
+          <h2>South For the Winter</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/startupdevs/sftw/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/startupdevs/sftw/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/startupdevs/sftw" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>South For the Winter (sftw)</h1>
+
+<p><em>South for the Winter</em> (<code>sftw</code>) is a db migration tool, a port of the
+<a href="https://github.com/akrabat/Akrabat">Akrabat</a> db migration tool. In fact, it's as close
+to a straight rip-off as can be with one primary difference: <code>Akrabat</code> uses a 
+<code>Zend\Db</code> database adapter and is largely targeted towards 
+<a href="http://framework.zend.com/">Zend Framework</a> apps, while <code>sftw</code> uses a vanilla 
+<a href="http://www.php.net/manual/en/book.pdo.php">PDO</a> adapter. Because of this, <code>sftw</code> 
+should be usable in circumstances where the ZF components are unavailable or 
+merely considered too heavywight.</p>
+
+<h1>Install</h1>
+
+<h2>As a standalone component</h2>
+
+<pre><code>$ git clone git@github.com:startupdevs/sftw.git
+</code></pre>
+
+<h2>In another project via Composer</h2>
+
+<p>Add to your project's <code>composer.json</code> as follows:</p>
+
+<pre><code>{
+    "repositories" : [
+        {
+            "type" : "vcs",
+            "url" : "https://github.com/startupdevs/sftw.git"
+        }
+    ]
+    "require": {
+        "startupdevs/sftw" : "dev-master"
+    }
+}
+</code></pre>
+
+<p>Optionally, you can add a <code>bin-dir</code> entry into the <code>config</code> section of your 
+project's <code>composer.json</code> to specify where the <code>sftw</code> CLI scripts are symlinked.</p>
+
+<pre><code>{
+    "config": {
+        "bin-dir": "scripts"
+    }   
+}
+</code></pre>
+
+<p>Then in your project root (assuming you used the <code>bin-dir</code> setting above):</p>
+
+<pre><code>$ php composer.phar update
+$ chmod +x ./scripts/sftw.php
+$ ln -s ./scripts/sftw.php ./scripts/sftw
+</code></pre>
+
+<h1>Usage</h1>
+
+<p>Assumes you have installed SFTW via Composer in your project <code>myproject</code> with a <code>bin-dir</code>
+value of <code>scripts</code>.</p>
+
+<p>Define one migration class - extending <code>Dws\Db\Schema\AbstractChange</code> for each schema 
+change you wish to implement. For example:</p>
+
+<pre><code>/*
+* Adding your own namespace to the migration classes is optional. If you do,
+* then you will be required to specify it during the invocation of the migration
+* script.
+*/
+namespace Ooga\Db\Migration;
+
+use Dws\Db\Schema\AbstractChange as SchemaChange;
+
+class AddUserTable extends SchemaChange
+{
+    public function up()
+    {
+        $sql = '
+            CREATE TABLE `user` (
+                `id` INT(11) UNSIGNED NOT NULL,
+                `name` VARCHAR(255)
+            )
+        ';
+        $this-&gt;pdo-&gt;exec($sql); 
+    }
+
+    public function down()
+    {
+        $sql = 'DROP TABLE `user`';
+        $this-&gt;pdo-&gt;exec($sql);
+    }
+
+}
+</code></pre>
+
+<p>Save this file as:</p>
+
+<pre><code>/path/to/myproject/scripts/migrations/001-AddUserTable.php
+</code></pre>
+
+<p>Invocation, starting in the project root, is as follows:</p>
+
+<p>To display the current schema version:</p>
+
+<pre><code>$ ./scripts/sftw current --host myhost --user myuser --pass mypass --db mydb
+</code></pre>
+
+<p>To upgrade to latest schema version:</p>
+
+<pre><code>$ ./scripts/sftw latest --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+</code></pre>
+
+<p>Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.</p>
+
+<p>To migrate to a specific schema version (in this case 1):</p>
+
+<pre><code>$ ./scripts/sftw migrate 1 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+</code></pre>
+
+<p>To roll all the way back to the state before the first migration file:</p>
+
+<pre><code>$ ./scripts/sftw migrate 0 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+</code></pre>
+
+<p>To set the schema pointer to a particular version (when you have some migrations already "basked-in" to the deployed db, for example):</p>
+
+<pre><code>$ ./scripts/sftw point-to 5 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
+</code></pre>
+
+<p>Note: Depending upon how you write your migrations, schema upgrades and rollbacks can be 
+"data destructive". This is especially true of ADD/DROP TABLE and ALTER TABLE ADD/DROP COLUMN calls, 
+but is even true when merely changing the format of a column. </p>
+
+<p>For example, consider altering a datetime field into a integer Unix timestamp. 
+A straight cast of a datetime value into an integer will result in a 0 value. 
+A return to datetime will result in a 1970 date. To avoid this, your migration
+methods can perform the conversion as follows:</p>
+
+<ol>
+<li>create a temp column of the desired type to store the converted data</li>
+<li>drop the targeted column</li>
+<li>add converted data into the temp column</li>
+<li>drop the temp column </li>
+</ol><p>Rollbacks would obviously need to work in reverse.</p>
+
+<p>Generally speaking, an upgrade/rollback sequence will restore the <strong>schema</strong> as 
+expected, but unless special steps - as above - are taken to save/protect the 
+affected <strong>data</strong>, it will likely be lost.</p>
+
+<h1>Next Steps</h1>
+
+<ol>
+<li><p>Allow a local config file (with some default name like <code>sftw.ini</code>) to contain 
+connection/namespace/path params, similar to how <code>phpunit</code> employs <code>phpunit.xml</code> 
+by default.</p></li>
+<li><p>Support multiple environments, allowing you to define connection/namespace/path 
+settings based upon environment (development, staging, production, etc).</p></li>
+</ol><h1>Finally</h1>
+
+<p>Enjoy the warm weather.</p>
+        </section>
+
+        <footer>
+          SFTW is maintained by <a href="https://github.com/startupdevs">startupdevs</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
