@@ -1,14 +1,14 @@
 South For the Winter (sftw)
 ===========================
 
-*South for the Winter* (`sftw`) is a db migration tool, a port of the
-[Akrabat](https://github.com/akrabat/Akrabat) db migration tool. In fact, it's as close
-to a straight rip-off as can be with one primary difference: `Akrabat` uses a 
-`Zend\Db` database adapter and is largely targeted towards 
-[Zend Framework](http://framework.zend.com/) apps, while `sftw` uses a vanilla 
-[PDO](http://www.php.net/manual/en/book.pdo.php) adapter. Because of this, `sftw` 
-should be usable in circumstances where the ZF components are unavailable or 
-merely considered too heavywight.
+*South for the Winter* ("SFTW") is a db migration tool, a port of the
+excellent [Akrabat](https://github.com/akrabat/Akrabat) db migration tool. In fact, 
+it's as close to a straight rip-off as can be with one primary difference: `Akrabat` 
+uses a `Zend\Db` database adapter and is largely targeted towards 
+[Zend Framework](http://framework.zend.com/) apps, while SFTW uses a vanilla 
+[PDO](http://www.php.net/manual/en/book.pdo.php) adapter and its own CLI script.
+Because of this, `sftw` should be usable across a wide range of applications 
+without incurring a ZF dependency.
 
 Install
 =======
@@ -61,8 +61,8 @@ Usage
 Assumes you have installed SFTW via Composer in your project `myproject` with a `bin-dir`
 value of `scripts`.
 
-Define one migration class - extending `Dws\Db\Schema\AbstractChange` for each schema 
-change you wish to implement. For example:
+Dor each schema change you wish to implement, define a migration class - extending 
+`Dws\Db\Schema\AbstractChange`.  For example:
 
 ```
 /*
@@ -112,7 +112,7 @@ To upgrade to latest schema version:
 
 Note that for convenience, you can use forward slashes (/) in the namespace. They will be reversed before use.
 
-To migrate to a specific schema version (in this case 1):
+To migrate to a specific schema version (in this case v1):
 
     $ ./scripts/sftw migrate 1 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
@@ -124,9 +124,9 @@ To set the schema pointer to a particular version (when you have some migrations
 
     $ ./scripts/sftw point-to 5 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
-Note: Depending upon how you write your migrations, schema upgrades and rollbacks can be 
-"data destructive". This is especially true of ADD/DROP TABLE and ALTER TABLE ADD/DROP COLUMN calls, 
-but is even true when merely changing the format of a column. 
+**Note:** Depending upon how you write your migrations, schema upgrades and rollbacks can be 
+"data destructive". This is especially true of `ADD/DROP TABLE` and `ALTER TABLE ADD/DROP COLUMN` 
+calls, but is even true when merely changing the format of a column. 
 
 For example, consider altering a datetime field into a integer Unix timestamp. 
 A straight cast of a datetime value into an integer will result in a 0 value. 
@@ -147,7 +147,8 @@ affected **data**, it will likely be lost.
 Next Steps
 ==========
 
-1. Allow a local config file (with some default name like `sftw.ini`) to contain 
+1. Allow a local config file (with some default name like `sftw.ini` and CLI options 
+to point to a new one and to disable automatic detection of the config) to contain 
 connection/namespace/path params, similar to how `phpunit` employs `phpunit.xml` 
 by default.
 
@@ -155,6 +156,6 @@ by default.
 settings based upon environment (development, staging, production, etc).
 
 Finally
-==========
+=======
 
 Enjoy the warm weather.
