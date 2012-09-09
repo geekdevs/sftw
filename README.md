@@ -7,7 +7,7 @@ it's as close to a straight rip-off as can be with one primary difference: `Akra
 uses a `Zend\Db` database adapter and is largely targeted towards 
 [Zend Framework](http://framework.zend.com/) apps, while SFTW uses a vanilla 
 [PDO](http://www.php.net/manual/en/book.pdo.php) adapter and its own CLI script.
-Because of this, `sftw` should be usable across a wide range of applications 
+Because of this, SFTW should be usable across a wide range of applications 
 without incurring a ZF dependency.
 
 Install
