@@ -120,7 +120,7 @@ To roll all the way back to the state before the first migration file:
 
     $ ./scripts/sftw migrate 0 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
-To set the schema pointer to a particular version (when you have some migrations already "basked-in" to the deployed db, for example):
+To set the schema pointer to a particular version (when you have some migrations already "baked-in" to the deployed db, for example):
 
     $ ./scripts/sftw point-to 5 --host myhost --user myuser --pass mypass --db mydb --path ./scripts/migrations --namespace Ooga/Db/Migrations
 
