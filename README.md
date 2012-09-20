@@ -61,7 +61,7 @@ Usage
 Assumes you have installed SFTW via Composer in your project `myproject` with a `bin-dir`
 value of `scripts`.
 
-Dor each schema change you wish to implement, define a migration class - extending 
+For each schema change you wish to implement, define a migration class - extending 
 `Dws\Db\Schema\AbstractChange`.  For example:
 
 ```
