@@ -227,25 +227,59 @@ class Manager
 	{
 		$this->isRollback = false;
 		if ($this->useTransaction){
-			$this->pdo->query('BEGIN');
-			foreach ($migrations as $migration) {
-				try {
-					$this->_processFile($migration, $direction);
-				} catch (\Exception $e) {
-					$this->pdo->query('ROLLBACK');
-					$this->isRollback = true;
-					throw new MigrateException($e->getMessage());
-				}
-			}
-			$this->pdo->query('COMMIT');
+			$this->performMigrationsWithTransaction($direction, $migrations);
 		} else {
-			foreach ($migrations as $migration) {
+			$this->performMigrationsWithoutTransaction($direction, $migrations);
+		}
+	}
+	
+	/**
+	 * Perform migrations with transaction
+	 * 
+	 * @param string $direction
+	 * @param array $migrations
+	 * @throws MigrateException
+	 * @return void
+	 */
+	protected function performMigrationsWithTransaction($direction, $migrations)
+	{
+		$oldErrorHandler = set_error_handler(function ($errnum, $errstr) {
+			throw new MigrateException($errstr, $errnum);
+		});
+		$pdo = $this->pdo;
+		$this->pdo->query('BEGIN');
+		foreach ($migrations as $migration) {
+			try {
 				$this->_processFile($migration, $direction);
+			} catch (\Exception $e) {
+				$this->pdo->query('ROLLBACK');
+				$this->isRollback = true;
+				if ($oldErrorHandler){
+					set_error_handler($oldErrorHandler);
+				}					
+				throw new MigrateException($e->getMessage());
 			}
-			
+		}
+		$this->pdo->query('COMMIT');
+		if ($oldErrorHandler){
+			set_error_handler($oldErrorHandler);
 		}
 	}
 
+	/**
+	 * Perform migrations without transactions
+	 * 
+	 * @param string $direction
+	 * @param array $migrations
+	 * @return void
+	 */
+	protected function performMigrationsWithooutTransactions($direction, $migrations)
+	{
+		foreach ($migrations as $migration) {
+			$this->_processFile($migration, $direction);
+		}		
+	}
+			
 	/**
 	 * 
 	 * @param int $currentVersion
