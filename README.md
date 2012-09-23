@@ -130,7 +130,7 @@ If you want to wrap the entire migration in a transaction, then use the `--useTr
 
 The --useTransaction option is unset/false by default since some engines do not support it.
 
-**Note:** Depending upon how you write your migrations, schema upgrades and rollbacks can be 
+**Note:** Depending upon how you write your migrations, schema migrations can be 
 "data destructive". This is especially true of `ADD/DROP TABLE` and `ALTER TABLE ADD/DROP COLUMN` 
 calls, but is even true when merely changing the format of a column. 
 
