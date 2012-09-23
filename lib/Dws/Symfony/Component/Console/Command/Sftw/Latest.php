@@ -2,6 +2,8 @@
 
 namespace Dws\Symfony\Component\Console\Command\Sftw;
 
+use Dws\Db\Schema\MigrateException;
+
 use Symfony\Component\Console;
 
 /**
@@ -23,8 +25,15 @@ class Latest extends AbstractSftw
 		parent::execute($input, $output);
 		
 		$this->displayCurrentSchemaVersion($output);
-		$result = $this->manager->updateTo();
+		try {
+			$result = $this->manager->updateTo();
+		} catch (MigrateException $e) {
+			$this->errors[] = $e->getMessage();
+			$this->outputErrorsAndExit($output, 1);
+		}
+
 		$version = $this->manager->getCurrentSchemaVersion();
 		$this->outputResult($result, $version, $output);
+		exit(0);
 	}
 }

@@ -23,5 +23,6 @@ class Current extends AbstractSftw
 		parent::execute($input, $output);
 		
 		$this->displayCurrentSchemaVersion($output);
+		exit(0);
 	}
 }

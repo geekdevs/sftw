@@ -2,6 +2,7 @@
 
 namespace Dws\Symfony\Component\Console\Command\Sftw;
 
+use Dws\Db\Schema\MigrateException;
 use Symfony\Component\Console;
 
 /**
@@ -27,8 +28,15 @@ class Migrate extends AbstractSftw
 		$this->displayCurrentSchemaVersion($output);
 		
 		$target = $input->getArgument('target');
-		$result = $this->manager->updateTo($target);
+		try {
+			$result = $this->manager->updateTo($target);		
+		} catch (MigrateException $e) {
+			$this->errors[] = $e->getMessage();
+			$this->outputErrorsAndExit($output, 1);
+		}
+
 		$version = $this->manager->getCurrentSchemaVersion();
 		$this->outputResult($result, $version, $output);
+		exit(0);
 	}
 }

@@ -29,5 +29,6 @@ class PointTo extends AbstractSftw
 		$this->manager->setCurrentSchemaVersion($target);
 		$output->writeln('Schema version pointer has been set to ' . $target);
 		$this->displayCurrentSchemaVersion($output);
+		exit(0);
 	}
 }

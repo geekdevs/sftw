@@ -50,23 +50,57 @@ class Manager
 	 * @var string
 	 */
 	protected $tablePrefix;
-
+	
+	/**
+	 * Whether to wrap the entire migration in a transaction
+	 * 
+	 * @var boolean
+	 */
+	protected $useTransaction = false;
+	
+	protected $isRollback = false;
+	
 	/**
 	 * Constructor
 	 * 
+	 * Alternatively accepts an array of options as the third parameter
+	 * 
 	 * @param PDO $pdo
 	 */
-	public function __construct(PDO $pdo, $dir, $namespace = '', $tablePrefix = '')
+	public function __construct(PDO $pdo, $dir, $options = array())
 	{
 		$this->pdo = $pdo;
 		$this->dir = $dir;
-		$this->namespace = str_replace('/', '\\', $namespace);
-		$this->tablePrefix = $tablePrefix;
 		
+		if (!is_array($options)){
+			throw new \RuntimeException('Options must be an array');
+		}
+		$this->namespace = array_key_exists('namespace', $options) ? str_replace('/', '\\', $options['namespace']) : '';
+		$this->tablePrefix = array_key_exists('tablePrefix', $options) ? $options['tablePrefix'] : '';
+		$this->useTransaction = array_key_exists('useTransaction', $options) ? (bool) $options['useTransaction'] : false;
+
+		$this->checkMigrationDirectory();
 		$this->ensureSchemaVersionTableExists();
 	}
+
+	/**
+	 * Check migration directory
+	 * 
+	 * @throws \RuntimeException
+	 */
+	protected function checkMigrationDirectory()
+	{
+		if (!is_dir($this->dir)){
+			throw new \RuntimeException('Unable to find migration directory: ' . $this->dir);
+		}
+	}
 	
-	public function doesSchemaVersionTableExist()
+	/**
+	 * Check that schema table exists
+	 * 
+	 * @return boolean
+	 */
+	protected function doesSchemaVersionTableExist()
 	{
 		$select = $this->getPreparedSqlSelectStatementForCurrentVersion();
 		try {
@@ -86,7 +120,7 @@ class Manager
 	 * 
 	 * @return Manager
 	 */
-	public function ensureSchemaVersionTableExists()
+	protected function ensureSchemaVersionTableExists()
 	{
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
 		if (!$this->doesSchemaVersionTableExist()){
@@ -178,11 +212,38 @@ class Manager
 		if ($currentVersion > $version) {
 			$direction = 'down';
 		}
-		foreach ($migrations as $migration) {
-			$this->_processFile($migration, $direction);
-		}
-
+		$this->_performMigrations($direction, $migrations);
 		return self::RESULT_OK;
+	}
+	
+	/**
+	 * 
+	 * @param string $direction
+	 * @param array $migrations
+	 * @return void
+	 * @throws \Dws\Db\Schema\Exception
+	 */
+	protected function _performMigrations($direction, $migrations)
+	{
+		$this->isRollback = false;
+		if ($this->useTransaction){
+			$this->pdo->query('BEGIN');
+			foreach ($migrations as $migration) {
+				try {
+					$this->_processFile($migration, $direction);
+				} catch (\Exception $e) {
+					$this->pdo->query('ROLLBACK');
+					$this->isRollback = true;
+					throw new MigrateException($e->getMessage());
+				}
+			}
+			$this->pdo->query('COMMIT');
+		} else {
+			foreach ($migrations as $migration) {
+				$this->_processFile($migration, $direction);
+			}
+			
+		}
 	}
 
 	/**
@@ -314,5 +375,10 @@ class Manager
 	public function getPrefixedSchemaVersionTableName()
 	{
 		return $this->tablePrefix . $this->schemaVersionTableName;
+	}
+	
+	public function isRollback()
+	{
+		return $this->isRollback;
 	}
 }

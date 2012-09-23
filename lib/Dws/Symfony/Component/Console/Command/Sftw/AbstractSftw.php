@@ -3,6 +3,7 @@
 namespace Dws\Symfony\Component\Console\Command\Sftw;
 
 use Dws\Db\Schema\Manager as SchemaManager;
+use PDO;
 use Symfony\Component\Console;
 
 /**
@@ -20,6 +21,10 @@ abstract class AbstractSftw extends Console\Command\Command
 	 */
 	protected $manager;
 	
+	/**
+	 *
+	 * @var type 
+	 */
 	protected $driver;
 	protected $host;
 	protected $user;
@@ -27,7 +32,9 @@ abstract class AbstractSftw extends Console\Command\Command
 	protected $db;
 	protected $path;
 	protected $namespace;
-	
+	protected $tablePrefix;
+	protected $useTransaction;
+		
 	protected $errors = array();
 	
 	/**
@@ -45,13 +52,18 @@ abstract class AbstractSftw extends Console\Command\Command
         $this->addOption('path', null, Console\Input\InputOption::VALUE_REQUIRED, 'Path for migration files. Default: ./scripts/migrations', './scripts/migrations');
         $this->addOption('driver', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB driver. Default: mysql', 'mysql');
         $this->addOption('prefix', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB table prefix. Default: ""', '');
-        // $this->addOption('config', null, Console\Input\InputOption::VALUE_REQUIRED, 'Path to config file. Default: "./stfw.ini"', './stfw.ini');			
+        $this->addOption('useTransaction', null, Console\Input\InputOption::VALUE_NONE, 'Wrap the entire migration in a transaction. Default: false');
 	}
 	
 	protected function outputErrorsAndExit(Console\Output\OutputInterface $output, $code = 1)
 	{
+		$output->writeln('Errors occurred. See details below.');
 		$output->writeln($this->errors);
-		$output->writeln($this->getSynopsis());
+		if ($this->manager && $this->manager->isRollback()){
+			$output->writeln('Rollback invoked. No changes applied.');
+		}
+		$output->writeln('');
+		$output->writeln('Usage: ' . $this->getSynopsis());
 		exit($code);
 	}
 	
@@ -80,8 +92,12 @@ abstract class AbstractSftw extends Console\Command\Command
 	{
 		$this->populateCommonParams($input, $output);
 		$dsn = self::buildDSN($this->driver, $this->db, $this->host);
-		$pdo = new \PDO($dsn, $this->user, $this->pass);
-		$manager = new SchemaManager($pdo, $this->path, $this->namespace, $this->prefix);
+		$pdo = new PDO($dsn, $this->user, $this->pass);
+		$manager = new SchemaManager($pdo, $this->path, array(
+			'namespace' => $this->namespace,
+			'tablePrefix' => $this->tablePrefix,
+			'useTransaction' => $this->useTransaction,
+		));
 		return $manager;
 	}
 	
@@ -123,7 +139,8 @@ abstract class AbstractSftw extends Console\Command\Command
 		
 		$this->namespace = $input->getOption('namespace');
 		$this->path = $input->getOption('path');
-		$this->prefix = $input->getOption('prefix');		
+		$this->prefix = $input->getOption('prefix');
+		$this->useTransaction = $input->getOption('useTransaction');
 	}
 	
 	public function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
