@@ -273,7 +273,7 @@ class Manager
 	 * @param array $migrations
 	 * @return void
 	 */
-	protected function performMigrationsWithooutTransactions($direction, $migrations)
+	protected function performMigrationsWithoutTransaction($direction, $migrations)
 	{
 		foreach ($migrations as $migration) {
 			$this->_processFile($migration, $direction);
