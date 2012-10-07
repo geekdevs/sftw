@@ -44,16 +44,22 @@ abstract class AbstractSftw extends Console\Command\Command
 	{
 		parent::__construct($name);
 		
-        $this->addOption('host', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB host');
-        $this->addOption('user', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB user');
-        $this->addOption('pass', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB password');
-        $this->addOption('db', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB name');
-        $this->addOption('dsn', null, Console\Input\InputOption::VALUE_REQUIRED, 'Complete DSN string. Overrides individual host/user/pass/db values. Format: mysql://john:pass@localhost:port/my_db', '');
-        $this->addOption('namespace', null, Console\Input\InputOption::VALUE_REQUIRED, 'Namespace for the migration classes (forward slashes ok, will be transformed)');
-        $this->addOption('path', null, Console\Input\InputOption::VALUE_REQUIRED, 'Path for migration files. Default: ./scripts/migrations', './scripts/migrations');
-        $this->addOption('driver', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB driver. Default: mysql', 'mysql');
-        $this->addOption('prefix', null, Console\Input\InputOption::VALUE_REQUIRED, 'DB table prefix. Default: ""', '');
-        $this->addOption('useTransaction', null, Console\Input\InputOption::VALUE_NONE, 'Wrap the entire migration in a transaction. Default: false');
+		/**
+		 * Define CLI options.
+		 * 
+		 * Symfony reserves -h and -n options, so there are some counter-intuitive ones 
+		 * in here, like -c for host ("connection'), -m for namespace, etc.
+		 */
+        $this->addOption('host', 'c', Console\Input\InputOption::VALUE_REQUIRED, 'DB host/connection');
+        $this->addOption('user', 'u', Console\Input\InputOption::VALUE_REQUIRED, 'DB user');
+        $this->addOption('pass', 'p', Console\Input\InputOption::VALUE_REQUIRED, 'DB password');
+        $this->addOption('db', 'd', Console\Input\InputOption::VALUE_REQUIRED, 'DB name');
+        $this->addOption('dsn', 's', Console\Input\InputOption::VALUE_REQUIRED, 'Complete DSN string. Overrides individual host/user/pass/db values. Format: mysql://john:pass@localhost:port/my_db', '');
+        $this->addOption('namespace', 'm', Console\Input\InputOption::VALUE_REQUIRED, 'Namespace for the migration classes (forward slashes ok, will be transformed)');
+        $this->addOption('path', 'f', Console\Input\InputOption::VALUE_REQUIRED, 'Path for migration files. Default: ./scripts/migrations', './scripts/migrations');
+        $this->addOption('driver', 'r', Console\Input\InputOption::VALUE_REQUIRED, 'DB driver. Default: mysql', 'mysql');
+        $this->addOption('prefix', 'x', Console\Input\InputOption::VALUE_REQUIRED, 'DB table prefix. Default: ""', '');
+        $this->addOption('useTransaction', 't', Console\Input\InputOption::VALUE_NONE, 'Wrap the entire migration in a transaction. Default: false');
 	}
 	
 	protected function outputErrorsAndExit(Console\Output\OutputInterface $output, $code = 1)
