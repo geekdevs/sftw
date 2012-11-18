@@ -18,13 +18,13 @@ class BaseSchema extends SchemaChange
 				`name` VARCHAR(255)
 			)
 		';
-		$this->pdo->exec($sql);
+		$this->querySQL($sql);
 	}
 
 	public function down()
 	{
 		$sql = 'DROP TABLE `test_migrate_1`';
-		$this->pdo->exec($sql);
+		$this->querySQL($sql);
 	}
 
 }

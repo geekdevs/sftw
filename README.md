@@ -84,13 +84,13 @@ class AddUserTable extends SchemaChange
 				`name` VARCHAR(255)
 			)
 		';
-		$this->pdo->exec($sql);	
+		$this->querySQL($sql);	
 	}
 
 	public function down()
 	{
 		$sql = 'DROP TABLE `user`';
-		$this->pdo->exec($sql);
+		$this->querySQL($sql);
 	}
 
 }
