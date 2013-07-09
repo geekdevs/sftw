@@ -18,7 +18,7 @@ abstract class AbstractSftw extends Console\Command\Command
 	/**
 	 * The schema manager
 	 * 
-	 * @var \Dws\Db\Schema\Manager
+	 * @var \Dws\Sftw\\Db\Schema\Manager
 	 */
 	protected $manager;
 	
