@@ -116,7 +116,7 @@ class Manager
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
 		if (!$this->doesSchemaVersionTableExist()){
 
-			$this->writeln('Creasting schema table');
+			$this->writeln('Creating schema table');
 
 			// means that the schema version table doesn't exist, so create it
 			$createSql = 
