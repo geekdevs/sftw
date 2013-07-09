@@ -7,23 +7,25 @@ use Dws\Sftw\Db\Schema\AbstractChange as SchemaChange;
 /**
  * @author David Weinraub <david@papayasoft.com>
  */
-class AddUserTable extends SchemaChange
+class DoSomethingWrong extends SchemaChange
 {
 
 	public function up()
 	{
-		$sql = '
-			CREATE TABLE `user` (
-				`id` INT(11) UNSIGNED NOT NULL,
-				`name` VARCHAR(255)
-			)
-		';
+		$sql = <<< EOT
+			ALTER TABLE `users`
+				ADD COLUMN `mycol` AFTER `name`,
+				ADD COLUMN `mycol` AFTER `name`;
+EOT;
 		$this->querySQL($sql);	
 	}
 
 	public function down()
 	{
-		$sql = 'DROP TABLE `user`';
+		$sql = <<< EOT
+			ALTER TABLE `users`
+				DROP COLUMN `mycol`;
+EOT;
 		$this->querySQL($sql);
 	}
 

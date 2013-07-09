@@ -1,6 +1,6 @@
 <?php
 
-namespace Dws\Symfony\Component\Console\Command\Sftw;
+namespace Dws\Sftw\Symfony\Component\Console\Command;
 
 use Symfony\Component\Console;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Dws\Db\Schema;
+namespace Dws\Sftw\Db\Schema;
 
 use \PDO;
 
@@ -45,21 +45,11 @@ class Manager
 	protected $namespace;
 
 	/**
-	 * Table prefix string for use by change classes
-	 * 
-	 * @var string
+	 *
+	 * @var Symfony\Component\Console\Output\OutputInterface
 	 */
-	protected $tablePrefix;
-	
-	/**
-	 * Whether to wrap the entire migration in a transaction
-	 * 
-	 * @var boolean
-	 */
-	protected $useTransaction = false;
-	
-	protected $isRollback = false;
-	
+	protected $output;
+
 	/**
 	 * Constructor
 	 * 
@@ -70,14 +60,14 @@ class Manager
 	public function __construct(PDO $pdo, $dir, $options = array())
 	{
 		$this->pdo = $pdo;
-		$this->dir = $dir;
+		$this->dir = $this->trimSlash($dir);
 		
 		if (!is_array($options)){
 			throw new \RuntimeException('Options must be an array');
 		}
 		$this->namespace = array_key_exists('namespace', $options) ? str_replace('/', '\\', $options['namespace']) : '';
 		$this->tablePrefix = array_key_exists('tablePrefix', $options) ? $options['tablePrefix'] : '';
-		$this->useTransaction = array_key_exists('useTransaction', $options) ? (bool) $options['useTransaction'] : false;
+		$this->output = array_key_exists('output', $options) ? $options['output'] : null;
 
 		$this->checkMigrationDirectory();
 		$this->ensureSchemaVersionTableExists();
@@ -124,6 +114,9 @@ class Manager
 	{
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
 		if (!$this->doesSchemaVersionTableExist()){
+
+			$this->writeln('Creasting schema table');
+
 			// means that the schema version table doesn't exist, so create it
 			$createSql = 
 			'
@@ -225,61 +218,11 @@ class Manager
 	 */
 	protected function _performMigrations($direction, $migrations)
 	{
-		$this->isRollback = false;
-		if ($this->useTransaction){
-			$this->performMigrationsWithTransaction($direction, $migrations);
-		} else {
-			$this->performMigrationsWithoutTransaction($direction, $migrations);
+		foreach ($migrations as $migration) {
+			$this->_processFile($migration, $direction);
 		}
 	}
 	
-	/**
-	 * Perform migrations with transaction
-	 * 
-	 * @param string $direction
-	 * @param array $migrations
-	 * @throws MigrateException
-	 * @return void
-	 */
-	protected function performMigrationsWithTransaction($direction, $migrations)
-	{
-		$oldErrorHandler = set_error_handler(function ($errnum, $errstr) {
-			throw new MigrateException($errstr, $errnum);
-		});
-		$pdo = $this->pdo;
-		$this->pdo->query('BEGIN');
-		foreach ($migrations as $migration) {
-			try {
-				$this->_processFile($migration, $direction);
-			} catch (\Exception $e) {
-				$this->pdo->query('ROLLBACK');
-				$this->isRollback = true;
-				if ($oldErrorHandler){
-					set_error_handler($oldErrorHandler);
-				}					
-				throw new MigrateException($e->getMessage());
-			}
-		}
-		$this->pdo->query('COMMIT');
-		if ($oldErrorHandler){
-			set_error_handler($oldErrorHandler);
-		}
-	}
-
-	/**
-	 * Perform migrations without transactions
-	 * 
-	 * @param string $direction
-	 * @param array $migrations
-	 * @return void
-	 */
-	protected function performMigrationsWithoutTransaction($direction, $migrations)
-	{
-		foreach ($migrations as $migration) {
-			$this->_processFile($migration, $direction);
-		}		
-	}
-			
 	/**
 	 * 
 	 * @param int $currentVersion
@@ -301,6 +244,8 @@ class Manager
 			$from = $stopVersion;
 			$to = $currentVersion;
 		}
+
+		$this->writeln('Direction: ' . $direction);
 
 		$files = array();
 		if (!is_dir($dir) || !is_readable($dir)) {
@@ -351,11 +296,16 @@ class Manager
 	 */
 	protected function _processFile($migration, $direction)
 	{
-		$path = $migration['path'];
+		$path = $this->trimSlash($migration['path']);
 		$version = $migration['version'];
-		$filename = $migration['filename'];
+		$filename = $this->trimSlash($migration['filename'], 'left');
 		$classname = $this->namespace  . '\\' . $migration['classname'];
-		require_once $this->dir . '/' . $path . '/' . $filename;
+
+		$file = $path 
+				? $this->dir . '/' . $path . '/' . $filename
+				: $this->dir . '/' . $filename;
+		$this->writeln('Processing file: ' . $file);
+		require_once $file;
 		if (!class_exists($classname, false)) {
 			throw new \Exception("Could not find class '$classname' in file '$filename'");
 		}
@@ -411,8 +361,50 @@ class Manager
 		return $this->tablePrefix . $this->schemaVersionTableName;
 	}
 	
-	public function isRollback()
+	/**
+	 * Write to output
+	 *
+	 * @param array $messages
+	 * @param boolean $newline
+	 * @param int $type
+	 */
+    public function write($messages, $newline = false, $type = 0)
 	{
-		return $this->isRollback;
+		if ($this->output) {
+			$this->output->write($messages, $newline, $type);
+		}
+	}
+
+	/**
+	 * Writeln to output
+	 * 
+	 * @param array $messages
+	 * @param int $type
+	 */
+    public function writeln($messages, $type = 0)
+	{
+		$this->write($messages, true, $type);
+	}
+
+	/**
+	 * Callback to prefix message
+	 * 
+	 * @param string $msg
+	 */
+	protected function cbPrefix()
+	{
+		$prefix = $this->outputPrefix;
+		return function($msg) use ($prefix) {
+			return $prefix . $msg;
+		};
+	}
+
+	protected function trimSlash($path, $side = 'right')
+	{
+		$method = ('left' == $side) ? 'ltrim' : 'rtrim';
+		foreach (array('/', '\\') as $slash) {
+			$path = $method($path, $slash);
+		}
+		return $path;
 	}
 }

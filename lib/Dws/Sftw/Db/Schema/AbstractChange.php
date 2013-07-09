@@ -1,6 +1,6 @@
 <?php
 
-namespace Dws\Db\Schema;
+namespace Dws\Sftw\Db\Schema;
 
 abstract class AbstractChange
 {
@@ -40,7 +40,7 @@ abstract class AbstractChange
 	protected function querySQL($sql)
 	{
 		if (!$this->pdo->query($sql)){
-			throw new \RuntimeException('Error executing SQL: ' . $sql);
+			throw new \RuntimeException('Error executing SQL: ' . PHP_EOL . PHP_EOL . $sql);
 		}
 	}
 }

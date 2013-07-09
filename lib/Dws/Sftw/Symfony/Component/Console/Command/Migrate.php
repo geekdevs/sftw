@@ -1,8 +1,8 @@
 <?php
 
-namespace Dws\Symfony\Component\Console\Command\Sftw;
+namespace Dws\Sftw\Symfony\Component\Console\Command;
 
-use Dws\Db\Schema\MigrateException;
+use Dws\Sftw\Db\Schema\MigrateException;
 use Symfony\Component\Console;
 
 /**

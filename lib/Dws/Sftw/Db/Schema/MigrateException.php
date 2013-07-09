@@ -1,6 +1,6 @@
 <?php
 
-namespace Dws\Db\Schema;
+namespace Dws\Sftw\Db\Schema;
 
 use \RuntimeException;
 
