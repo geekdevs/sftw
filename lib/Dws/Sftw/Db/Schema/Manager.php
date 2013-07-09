@@ -3,6 +3,7 @@
 namespace Dws\Sftw\Db\Schema;
 
 use \PDO;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * Manages db schema version changes
@@ -67,7 +68,7 @@ class Manager
 		}
 		$this->namespace = array_key_exists('namespace', $options) ? str_replace('/', '\\', $options['namespace']) : '';
 		$this->tablePrefix = array_key_exists('tablePrefix', $options) ? $options['tablePrefix'] : '';
-		$this->output = array_key_exists('output', $options) ? $options['output'] : null;
+		$this->output = array_key_exists('output', $options) ? $options['output'] : new ConsoleOutput();
 
 		$this->checkMigrationDirectory();
 		$this->ensureSchemaVersionTableExists();
