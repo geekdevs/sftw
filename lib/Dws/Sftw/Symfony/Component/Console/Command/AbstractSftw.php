@@ -151,6 +151,8 @@ abstract class AbstractSftw extends Console\Command\Command
 	protected function displayCurrentSchemaVersion(Console\Output\OutputInterface $output)
 	{
 		$version = $this->manager->getCurrentSchemaVersion();
-		$output->writeln('Current schema version is ' . $version);
+
+		// @see Dws\Sftw\Db\Schema\SchemaManager::_processMigrations() for nice spacing
+		$output->writeln(sprintf('Current version: %s', $version));
 	}	
 }

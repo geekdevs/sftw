@@ -219,8 +219,13 @@ class Manager
 	 */
 	protected function _performMigrations($direction, $migrations)
 	{
-		foreach ($migrations as $migration) {
-			$this->_processFile($migration, $direction);
+		if (count($migrations)) {
+			// @see Dws\Sftw\Symfony\Component\Console\Command\AbstractSftw::displayCurrentSchemaVersion() for nice spacing
+			$this->writeln(sprintf('Target version:  %s', self::getTargetVersionFromMigrationList($migrations, $direction)));
+			$this->writeln(sprintf('Direction:       %s', $direction));
+			foreach ($migrations as $migration) {
+				$this->_processFile($migration, $direction);
+			}
 		}
 	}
 	
@@ -245,8 +250,6 @@ class Manager
 			$from = $stopVersion;
 			$to = $currentVersion;
 		}
-
-		$this->writeln('Direction: ' . $direction);
 
 		$files = array();
 		if (!is_dir($dir) || !is_readable($dir)) {
@@ -286,6 +289,17 @@ class Manager
 		}
 
 		return $files;
+	}
+
+	protected static function getTargetVersionFromMigrationList($list, $direction)
+	{
+		$lastRecord = end($list);
+		reset($list);
+		$target = $lastRecord['version'];
+		if ('down' == $direction) {
+			$target--;
+		}
+		return $target;
 	}
 
 	/**
