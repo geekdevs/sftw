@@ -221,8 +221,9 @@ class Manager
 	{
 		if (count($migrations)) {
 			// @see Dws\Sftw\Symfony\Component\Console\Command\AbstractSftw::displayCurrentSchemaVersion() for nice spacing
-			$this->writeln(sprintf('Target version:  %s', self::getTargetVersionFromMigrationList($migrations, $direction)));
-			$this->writeln(sprintf('Direction:       %s', $direction));
+			$this->writeln(sprintf('Current version:  %s', $this->getCurrentSchemaVersion()));
+			$this->writeln(sprintf('Target version:   %s', self::getTargetVersionFromMigrationList($migrations, $direction)));
+			$this->writeln(sprintf('Direction:        %s', $direction));
 			foreach ($migrations as $migration) {
 				$this->_processFile($migration, $direction);
 			}
