@@ -185,6 +185,8 @@ class Manager
 	 */
 	public function updateTo($version = null)
 	{
+        $this->writeln(sprintf('Current version:  %s', $this->getCurrentSchemaVersion()));
+
 		if (is_null($version)) {
 			$version = PHP_INT_MAX;
 		}
