@@ -185,13 +185,12 @@ class Manager
 	 */
 	public function updateTo($version = null)
 	{
-        $this->writeln(sprintf('Current version:  %s', $this->getCurrentSchemaVersion()));
-
 		if (is_null($version)) {
 			$version = PHP_INT_MAX;
 		}
 		$version = (int) $version;
 		$currentVersion = $this->getCurrentSchemaVersion();
+		$this->writeln(sprintf('Current schema version: %s', $currentVersion));
 		if ($currentVersion == $version) {
 			return self::RESULT_AT_CURRENT_VERSION;
 		}
@@ -222,10 +221,8 @@ class Manager
 	protected function _performMigrations($direction, $migrations)
 	{
 		if (count($migrations)) {
-			// @see Dws\Sftw\Symfony\Component\Console\Command\AbstractSftw::displayCurrentSchemaVersion() for nice spacing
-			$this->writeln(sprintf('Current version:  %s', $this->getCurrentSchemaVersion()));
-			$this->writeln(sprintf('Target version:   %s', self::getTargetVersionFromMigrationList($migrations, $direction)));
-			$this->writeln(sprintf('Direction:        %s', $direction));
+			$this->writeln(sprintf('Target schema version:  %s', self::getTargetVersionFromMigrationList($migrations, $direction)));
+			$this->writeln(sprintf('Direction:              %s', $direction));
 			foreach ($migrations as $migration) {
 				$this->_processFile($migration, $direction);
 			}

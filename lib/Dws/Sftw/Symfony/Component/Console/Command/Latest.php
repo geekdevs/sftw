@@ -24,7 +24,7 @@ class Latest extends AbstractSftw
 	{
 		parent::execute($input, $output);
 		
-		$this->displayCurrentSchemaVersion($output);
+		// $this->displayCurrentSchemaVersion($output);
 		try {
 			$result = $this->manager->updateTo();
 		} catch (MigrateException $e) {

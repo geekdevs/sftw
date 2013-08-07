@@ -153,6 +153,6 @@ abstract class AbstractSftw extends Console\Command\Command
 		$version = $this->manager->getCurrentSchemaVersion();
 
 		// @see Dws\Sftw\Db\Schema\SchemaManager::_processMigrations() for nice spacing
-		$output->writeln(sprintf('Current version: %s', $version));
+		$output->writeln(sprintf('Current schema version: %s', $version));
 	}	
 }

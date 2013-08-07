@@ -25,7 +25,7 @@ class Migrate extends AbstractSftw
 	{
 		parent::execute($input, $output);
 				
-		$this->displayCurrentSchemaVersion($output);
+		// $this->displayCurrentSchemaVersion($output);
 		
 		$target = $input->getArgument('target');
 		try {
