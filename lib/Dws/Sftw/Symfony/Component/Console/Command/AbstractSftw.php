@@ -93,7 +93,9 @@ abstract class AbstractSftw extends Console\Command\Command
 	{
 		$this->populateCommonParams($input, $output);
 		$dsn = self::buildDSNForPdo($this->driver, $this->db, $this->host);
-		$pdo = new PDO($dsn, $this->user, $this->pass);
+		$pdo = new PDO($dsn, $this->user, $this->pass, array(
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ));
 		$manager = new SchemaManager($pdo, $this->path, array(
 			'namespace' => $this->namespace,
 			'output'	=> $output,
