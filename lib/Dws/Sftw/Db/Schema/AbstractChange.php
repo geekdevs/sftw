@@ -30,18 +30,20 @@ abstract class AbstractChange
 	 * Rollback the changes made in up()
 	 */
 	abstract function down();
-	
+
 	/**
 	 * Convenience method for wrapping a query in a try/catch
-	 * 
+	 *
 	 * @param string $sql
 	 * @throws \RuntimeException
 	 */
-	protected function querySQL($sql)
-	{
-		if (!$this->pdo->query($sql)){
-			throw new \RuntimeException('Error executing SQL: ' . PHP_EOL . PHP_EOL . $sql);
-		}
-	}
+    protected function querySQL($sql)
+    {
+        try {
+            $this->pdo->query($sql);
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage() . PHP_EOL . PHP_EOL . $sql);
+        }
+    }
 }
 
